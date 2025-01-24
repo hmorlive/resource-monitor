@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^34.0.1",
+    "systeminformation": "^5.25.11",
+    "wait-on": "^8.0.2"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "react-scripts start",
+    "start:ui:dev": "cd ui && npm run dev",
+    "electron:dev": "concurrently \"npm run start:ui:dev\" \"wait-on http://localhost:3000 && nodemon --watch main.js --exec \\\"electron .\\\"\""
+  },
+  "main": "main.js",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
