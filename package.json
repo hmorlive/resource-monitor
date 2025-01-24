@@ -1,18 +1,48 @@
 {
+  "name": "remon",
   "dependencies": {
-    "concurrently": "^9.1.2",
-    "electron": "^34.0.1",
-    "systeminformation": "^5.25.11",
-    "wait-on": "^8.0.2"
+    "electron-serve": "^2.1.1",
+    "systeminformation": "^5.25.11"
   },
   "type": "module",
   "scripts": {
     "start": "react-scripts start",
     "start:ui:dev": "cd ui && npm run dev",
-    "electron:dev": "concurrently \"npm run start:ui:dev\" \"wait-on http://localhost:3000 && nodemon --watch main.js --exec \\\"electron .\\\"\""
+    "electron:dev": "NODE_ENV=dev concurrently \"npm run start:ui:dev\" \"wait-on http://localhost:3000 && nodemon --watch main.js --exec \\\"electron .\\\"\"",
+    "electron:build": "cd ui && npm run build && cd .. && electron-builder"
   },
   "main": "main.js",
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "concurrently": "^9.1.2",
+    "cpx": "^1.5.0",
+    "electron": "^34.0.1",
+    "electron-builder": "^25.1.8",
+    "nodemon": "^3.1.9",
+    "wait-on": "^8.0.2"
+  },
+  "author": {
+    "name": "Hazmed Moreno",
+    "email": "mail@hazmedmoreno.com"
+  },
+  "license": "MIT",
+  "version": "0.0.1",
+  "description": "Simple System Monitor",
+  "build": {
+    "appId": "com.hazmedmoreno.remon",
+    "productName": "Simple System Monitor",
+    "files": [
+      "renderer/**/*",
+      "main.js",
+      "preload.js",
+      "core/**"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icons"
+    }
   }
 }

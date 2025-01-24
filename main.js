@@ -2,6 +2,9 @@ import { app, BrowserWindow, ipcMain, screen } from "electron";
 import path from "path";
 import si from "systeminformation";
 import { getNetworkMbps } from "./core/getSysInfo.js";
+import serve from 'electron-serve';
+
+const loadURL = serve({directory: 'renderer'});
 
 let overlayWindow;
 
@@ -31,12 +34,17 @@ app.on("ready", () => {
     webPreferences: {
       preload: path.join(app.getAppPath(), "preload.js"), // Absolute path for the preload script
       contextIsolation: true, // Recommended for security
-      devTools: false, // Enable DevTools
+      devTools: false
     },
   });
 
   // Load the React app
-  overlayWindow.loadURL("http://localhost:3000");
+  if (process.env.NODE_ENV !== "dev") {
+    overlayWindow.loadURL(path.join(app.getAppPath(), "build/ui/index.html"));
+  } else {
+    loadURL(overlayWindow);
+    //overlayWindow.loadURL("http://localhost:3000");
+  }
 
   // ignore mouse events
   //overlayWindow.setIgnoreMouseEvents(true, { forward: true });
@@ -106,7 +114,7 @@ ipcMain.on("close-window", () => {
 
 // Handle getting host name
 ipcMain.handle("get-system-host", async () => {
-  try {
+  try {console.log("get-system-host")
     const osInfo = await si.osInfo();
     const host = osInfo.hostname;
     return host;
