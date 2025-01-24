@@ -28,21 +28,25 @@
   "version": "0.0.1",
   "description": "Simple System Monitor",
   "build": {
+    "icon": "./build/128x128.png",
     "appId": "com.hazmedmoreno.remon",
     "productName": "Simple System Monitor",
     "files": [
       "renderer/**/*",
       "main.js",
       "preload.js",
-      "core/**"
+      "core/**",
+      "build/**"
+    ],
+    "extraResources": [
+      "./build/**"
     ],
     "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Utility",
-      "icon": "build/icons"
+        "target": [
+          "AppImage"
+        ],
+        "category": "Utility",
+        "icon": "./build/"
+      }
     }
   }
-}

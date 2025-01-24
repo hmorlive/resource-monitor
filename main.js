@@ -28,6 +28,7 @@ app.on("ready", () => {
     x, // Set horizontal position
     y, // Set vertical position
     frame: false, // Frameless window
+    title: "ReMon",
     transparent: true, // Transparent background
     alwaysOnTop: true, // Always stays on top
     resizable: false, // Disable resizing
@@ -36,15 +37,10 @@ app.on("ready", () => {
       contextIsolation: true, // Recommended for security
       devTools: false
     },
+    icon: path.join(app.getAppPath(), "build/icon.png"),
   });
 
-  // Load the React app
-  if (process.env.NODE_ENV !== "dev") {
-    overlayWindow.loadURL(path.join(app.getAppPath(), "build/ui/index.html"));
-  } else {
-    loadURL(overlayWindow);
-    //overlayWindow.loadURL("http://localhost:3000");
-  }
+  loadURL(overlayWindow);
 
   // ignore mouse events
   //overlayWindow.setIgnoreMouseEvents(true, { forward: true });
@@ -114,7 +110,7 @@ ipcMain.on("close-window", () => {
 
 // Handle getting host name
 ipcMain.handle("get-system-host", async () => {
-  try {console.log("get-system-host")
+  try {
     const osInfo = await si.osInfo();
     const host = osInfo.hostname;
     return host;
