@@ -37,7 +37,7 @@ app.on("ready", () => {
       contextIsolation: true, // Recommended for security
       devTools: false
     },
-    icon: path.join(app.getAppPath(), "build/icon.png"),
+    icon: path.join(app.getAppPath(), "build/128x128.png"),
   });
 
   loadURL(overlayWindow);

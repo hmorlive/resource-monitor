@@ -9,3 +9,5 @@ This simple ui resource monitor has been built on Electron and is meant to be cr
 - Storage used/total
 - Network upload (Mbps)
 - Network download (Mbps)
+
+![Alt Text](snip.webp)
