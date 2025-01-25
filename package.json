@@ -27,10 +27,11 @@
   "license": "MIT",
   "version": "0.0.1",
   "description": "Simple System Monitor",
+  "publisher": "Hazmed Moreno",
   "build": {
-    "icon": "./build/128x128.png",
+    "icon": "./build/icon.png",
     "appId": "com.hazmedmoreno.remon",
-    "productName": "Simple System Monitor",
+    "productName": "ReMon",
     "files": [
       "renderer/**/*",
       "main.js",
@@ -42,11 +43,15 @@
       "./build/**"
     ],
     "linux": {
-        "target": [
-          "AppImage"
-        ],
-        "category": "Utility",
-        "icon": "./build/"
-      }
+      "target": [
+        "snap"
+      ],
+      "icon": "build"
+    },
+    "snap": {
+      "confinement": "classic",
+      "grade": "stable",
+      "summary": "This simple ui resource monitor has been built on Electron and is meant to be cross-plattform. It relies on system-information API and tracks:\n- CPU load (%)\n- CPU temp\n- RAM used/total\n- Storage used/total\n- Network upload (Mbps)\n- Network download (Mbps)"
     }
   }
+}

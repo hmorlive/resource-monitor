@@ -1,12 +1,23 @@
-import { app, BrowserWindow, ipcMain, screen } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  nativeImage,
+  screen,
+  Tray,
+} from "electron";
 import path from "path";
 import si from "systeminformation";
 import { getNetworkMbps } from "./core/getSysInfo.js";
-import serve from 'electron-serve';
+import serve from "electron-serve";
 
-const loadURL = serve({directory: 'renderer'});
+const loadURL = serve({ directory: "renderer" });
 
 let overlayWindow;
+let tray;
+
+app.commandLine.appendSwitch("wm-class", "non-taskbar-window"); // Hide from taskbar on Linux
 
 app.on("ready", () => {
   // Get screen dimensions
@@ -29,15 +40,19 @@ app.on("ready", () => {
     y, // Set vertical position
     frame: false, // Frameless window
     title: "ReMon",
+    skipTaskbar: true, // Hide from taskbar
     transparent: true, // Transparent background
     alwaysOnTop: true, // Always stays on top
     resizable: false, // Disable resizing
+    type: "utility", // Window type
     webPreferences: {
       preload: path.join(app.getAppPath(), "preload.js"), // Absolute path for the preload script
       contextIsolation: true, // Recommended for security
-      devTools: false
+      devTools: false,
     },
-    icon: path.join(app.getAppPath(), "build/128x128.png"),
+    icon: nativeImage.createFromPath(
+      path.join(app.getAppPath(), "build/icon.png")
+    ),
   });
 
   loadURL(overlayWindow);
@@ -85,6 +100,22 @@ app.on("ready", () => {
       console.error("Error fetching resource usage:", error);
     }
   }, 250); // Send stats every 250ms
+});
+
+// create tray icon when app is ready
+app.whenReady().then(() => {
+  try {
+    const icon = nativeImage.createFromPath(
+      path.join(app.getAppPath(), "build/icon.png")
+    );
+    tray = new Tray(icon);
+    const contextMenu = Menu.buildFromTemplate([
+      { label: "Quit", click: () => app.quit() },
+    ]);
+    tray.setContextMenu(contextMenu);
+  } catch (error) {
+    console.error("Error creating tray icon:", error);
+  }
 });
 
 // Handle app quitting behavior
