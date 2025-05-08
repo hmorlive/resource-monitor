@@ -11,6 +11,7 @@ import path from "path";
 import si from "systeminformation";
 import { getNetworkMbps } from "./core/getSysInfo.js";
 import serve from "electron-serve";
+import attachScreenChangeResolver from "./core/useRespondToScreenChanges.js";
 
 const loadURL = serve({ directory: "renderer" });
 
@@ -58,7 +59,7 @@ app.on("ready", () => {
   loadURL(overlayWindow);
 
   // overlay position utility
-  useRespondToScreenChanges(overlayWindow);
+  attachScreenChangeResolver(overlayWindow);
 
   // ignore mouse events
   //overlayWindow.setIgnoreMouseEvents(true, { forward: true });
