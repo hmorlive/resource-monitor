@@ -57,6 +57,9 @@ app.on("ready", () => {
 
   loadURL(overlayWindow);
 
+  // overlay position utility
+  useRespondToScreenChanges(overlayWindow);
+
   // ignore mouse events
   //overlayWindow.setIgnoreMouseEvents(true, { forward: true });
 
