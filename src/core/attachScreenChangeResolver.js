@@ -10,7 +10,7 @@ export default function attachScreenChangeResolver(overlayWindow) {
         const { x, y, width, height } = display.bounds;
         
         const windowWidth = 220;
-        const windowHeight = 520;
+        const windowHeight = 460;
         
         // x and y here are global desktop space
         const newX = x + width - windowWidth - 6;

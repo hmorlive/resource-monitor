@@ -11,8 +11,10 @@ import path from "path";
 import si from "systeminformation";
 import { getNetworkMbps } from "./core/getSysInfo.js";
 import serve from "electron-serve";
-import attachScreenChangeResolver from "./core/useRespondToScreenChanges.js";
+import attachScreenChangeResolver from "./core/attachScreenChangeResolver.js";
+import attachFocusResolver from "./core/attachFocusResolver.ts";
 
+const isProd = process.env.NODE_ENV === "prod";
 const loadURL = serve({ directory: "renderer" });
 
 let overlayWindow;
@@ -43,7 +45,7 @@ app.on("ready", () => {
     title: "ReMon",
     skipTaskbar: true, // Hide from taskbar
     transparent: true, // Transparent background
-    alwaysOnTop: true, // Always stays on top
+    alwaysOnTop: false, // Always stays on top
     resizable: false, // Disable resizing
     type: "utility", // Window type
     webPreferences: {
@@ -56,10 +58,12 @@ app.on("ready", () => {
     ),
   });
 
-  loadURL(overlayWindow);
+  isProd ? loadURL(overlayWindow) : overlayWindow.loadURL("http://localhost:3000");
 
   // overlay position utility
   attachScreenChangeResolver(overlayWindow);
+  // Attach focus resolver to handle focus and blur events
+  //attachFocusResolver(overlayWindow);
 
   // ignore mouse events
   //overlayWindow.setIgnoreMouseEvents(true, { forward: true });

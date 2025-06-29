@@ -9,6 +9,7 @@ import {
 import { BsDeviceSsdFill } from "react-icons/bs";
 import { GoCpu } from "react-icons/go";
 import { IoIosTrendingDown, IoIosTrendingUp } from "react-icons/io";
+import GaugeComponent from "react-gauge-component";
 
 const DEFAULT_THRESHOLD_COLORS = {
   low: "bg-emerald-500",
@@ -25,6 +26,7 @@ export default function Home() {
   const [storage, setStorage] = useState({ total: 0, used: 0 });
   const [host, setHost] = useState("");
   const [network, setNetwork] = useState({ upload: 0, download: 0 });
+  const [isCondensed, setIsCondensed] = useState(false);
 
   useEffect(() => {
     // Ensure Electron's API is available
@@ -41,6 +43,7 @@ export default function Home() {
     // Ensure Electron's API is available
     if (window?.electron?.onResourceUsage) {
       const handleResourceUsage = (data) => {
+        setIsCondensed(data?.isCondensed || false);
         setMemory(data.memory);
         setCpu(data.cpu);
         setStorage(data.storage);
@@ -72,12 +75,40 @@ export default function Home() {
   const downloadMb = network.download;
   const uploadMb = network.upload;
 
+  
+  if (isCondensed) {
+    return (
+      <div className="font-sans p-6 w-full flex flex-col flex-1">
+        <GaugeComponent
+        
+          value={cpuUsage}
+          arc={{
+            subArcs: [
+              {
+                limit: 20,
+                
+                // green hex neon
+                color: "#39FF14",
+              },
+              {
+                limit: 50,
+                color: "#FFFF00", // yellow
+              },
+              {                limit: 80,
+                color: "#FF4500", // orange red
+              },
+              {                limit: 100,
+                color: "#FF0000", // red
+              },
+            ],
+          }}
+          />
+      </div>
+    );
+  }
+
   return (
     <div className="font-sans p-6 w-full flex flex-col flex-1">
-      <h1 className="text-lg font-bold mb-8 w-full text-center">
-        System Monitor
-      </h1>
-
       <div className="flex flex-col flex-1 items-center justify-center gap-4">
         {/* CPU Usage Gauge */}
         <Gauge
@@ -156,6 +187,7 @@ function Gauge({
   value,
   unit,
   thresholdColors = DEFAULT_THRESHOLD_COLORS,
+  width = "",
 }) {
   const calculateColor = (value) => {
     if (value < 50) return thresholdColors.low;
@@ -166,7 +198,7 @@ function Gauge({
   const Icon = icon;
 
   return (
-    <div className="flex flex-col items-center rounded-lg px-2 w-full gap-1">
+    <div className={`flex flex-col items-center rounded-lg px-2 w-full gap-1 ${width}`}>
       <h2 className="text-xs font-extrabold flex gap-1 items-center justify-center">
         <Icon />
         {label}

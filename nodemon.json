@@ -1,6 +1,6 @@
 {
-    "watch": ["main.js"],
-    "ignore": ["ui/*"],
-    "ext": "js,json"
+    "watch": ["src"],
+    "ignore": ["ui/*", "dist/*", "node_modules/*", "build/*"],
+    "ext": "js,ts,json"
   }
   
