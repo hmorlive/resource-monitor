@@ -3,10 +3,13 @@ import path from "path";
 import si from "systeminformation";
 import { getNetworkMbps } from "./core/getSysInfo.js";
 import serve from "electron-serve";
-import attachScreenChangeResolver, { repositionWindow } from "./core/attachScreenChangeResolver";
+import attachScreenChangeResolver, { repositionWindow } from "./core/attachScreenChangeResolver.js";
 
-const isProd = process.env.NODE_ENV === "prod";
-const loadURL = serve({ directory: "renderer" });
+const isProd = app.isPackaged;
+
+const loadURL = serve({ directory: "build/renderer" });
+
+const iconPath = isProd ? path.join(app.getAppPath(), "build", "public", "icon.png") : path.join(app.getAppPath(), "public", "icon.png");
 
 let overlayWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -31,7 +34,7 @@ const windowDimensions = {
 
 app.commandLine.appendSwitch("wm-class", "non-taskbar-window"); // Hide from taskbar on Linux
 
-app.on("ready", () => {
+app.on("ready", async () => {
   // Get screen dimensions
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.bounds;
@@ -55,15 +58,16 @@ app.on("ready", () => {
     resizable: false, // Disable resizing
     type: "utility", // Window type
     webPreferences: {
-      preload: path.join(app.getAppPath(), "preload.js"), // Absolute path for the preload script
+      preload: isProd ? path.join(app.getAppPath(), "build", "preload.js") : path.join(app.getAppPath(), "preload.js"), // Absolute path for the preload script
       contextIsolation: true, // Recommended for security
       devTools: !!isProd, // Enable DevTools in development mode
     },
-    icon: nativeImage.createFromPath(path.join(app.getAppPath(), "public", "icon.ico")),
+    icon: nativeImage.createFromPath(iconPath), // Use the icon from the resources
   });
 
   overlayWindow.setIgnoreMouseEvents(true, { forward: true }); // Ignore mouse events, but allow forwarding
-  isProd ? loadURL(overlayWindow) : overlayWindow.loadURL("http://localhost:3000");
+  console.log(isProd ? "Running in production mode" : "Running in development mode");
+  isProd ? await loadURL(overlayWindow) : overlayWindow.loadURL("http://localhost:3000");
 
   // overlay position utility
   attachScreenChangeResolver(overlayWindow, windowDimensions, isExpanded);
@@ -132,7 +136,7 @@ function updateTrayMenu() {
       label: isExpanded ? "Collapse" : "Expand",
       click: trayMenuExpamnsionToggleHandler,
     },
-        { type: "separator" },
+    { type: "separator" },
     {
       label: isVisible ? "Hide" : "Show",
       click: toggleWindowVisibility,
@@ -146,7 +150,7 @@ function updateTrayMenu() {
 // create tray icon when app is ready
 app.whenReady().then(() => {
   try {
-    const icon = nativeImage.createFromPath(path.join(app.getAppPath(), "public", "icon.png"));
+    const icon = nativeImage.createFromPath(iconPath);
     tray = new Tray(icon);
     updateTrayMenu();
   } catch (error) {
@@ -158,20 +162,6 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
-  }
-});
-
-// Handle minimizing the app
-ipcMain.on("minimize-window", () => {
-  if (overlayWindow) {
-    overlayWindow.minimize();
-  }
-});
-
-// Handle closing the app
-ipcMain.on("close-window", () => {
-  if (overlayWindow) {
-    overlayWindow.close();
   }
 });
 

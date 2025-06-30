@@ -19,9 +19,11 @@ await build({
   outdir: join(__dirname, "build"),
   bundle: true,
   platform: "node",
-  target: "node20",
+  target: "node24",
   external: ["electron"],
   sourcemap: true,
+  format: "cjs",
+  minify: true,
 });
 
 console.log("✓ Main process built");

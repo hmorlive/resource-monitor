@@ -7,10 +7,11 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && node build.mjs",
+    "build:ui": "cd ui && npm run build",
     "watch": "nodemon",
     "start:ui:dev": "cd ui && npm run dev",
     "electron:dev": "concurrently -k -s first \"npm run start:ui:dev\" \"npm run watch\"",
-    "electron:build": "cd ui && npm run build && cd .. && electron-builder"
+    "electron:build": "npm run build && npm run build:ui && electron-builder"
   },
   "main": "build/main.js",
   "devDependencies": {
@@ -28,11 +29,11 @@
     "email": "mail@hazmedmoreno.com"
   },
   "license": "MIT",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Simple System Monitor",
   "publisher": "Hazmed Moreno",
   "build": {
-    "icon": "./build/icon.png",
+    "icon": "build/public/icon.png",
     "appId": "com.hazmedmoreno.remon",
     "productName": "ReMon",
     "files": [
@@ -47,14 +48,18 @@
     ],
     "linux": {
       "target": [
-        "snap"
+        "deb"
       ],
-      "icon": "build"
+      "category": "Utility",
+      "icon": "build/icon.png",
+      "executableName": "remon",
+      "desktop": {
+        "Name": "ReMon",
+        "Comment": "Simple System Monitor"
+      }
     },
-    "snap": {
-      "confinement": "classic",
-      "grade": "stable",
-      "summary": "This simple ui resource monitor has been built on Electron and is meant to be cross-plattform. It relies on system-information API and tracks:\n- CPU load (%)\n- CPU temp\n- RAM used/total\n- Storage used/total\n- Network upload (Mbps)\n- Network download (Mbps)"
+    "deb": {
+      "afterInstall": "./scripts/postinstall.sh"
     }
   }
 }
