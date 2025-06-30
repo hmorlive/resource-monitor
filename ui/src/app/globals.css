@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  @apply rounded-md h-full w-full;
+}
+/* global.css or your Tailwind entrypoint */
+html,
 body {
-  @apply bg-black bg-opacity-0 rounded-md;
+  overflow: auto; /* or scroll if needed */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }

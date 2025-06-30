@@ -1,6 +1,6 @@
 {
-    "watch": ["src"],
-    "ignore": ["ui/*", "dist/*", "node_modules/*", "build/*"],
-    "ext": "js,ts,json"
-  }
-  
+  "watch": ["src", "public"],
+  "ignore": ["node_modules", "dist", "build", "tsBuild", "ui"],
+  "ext": "ts,js,json",
+  "exec": "node build.mjs && wait-on http://localhost:3000 && electron build/main.js"
+}

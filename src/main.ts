@@ -1,24 +1,33 @@
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  nativeImage,
-  screen,
-  Tray,
-} from "electron";
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, screen, Tray } from "electron";
 import path from "path";
 import si from "systeminformation";
 import { getNetworkMbps } from "./core/getSysInfo.js";
 import serve from "electron-serve";
-import attachScreenChangeResolver from "./core/attachScreenChangeResolver.js";
-import attachFocusResolver from "./core/attachFocusResolver.ts";
+import attachScreenChangeResolver, { repositionWindow } from "./core/attachScreenChangeResolver";
 
 const isProd = process.env.NODE_ENV === "prod";
 const loadURL = serve({ directory: "renderer" });
 
-let overlayWindow;
-let tray;
+let overlayWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isExpanded = false;
+let isVisible = true;
+
+const EXPANDED_WINDOW_WIDTH = 220;
+const EXPANDED_WINDOW_HEIGHT = 460;
+const COLLAPSED_WINDOW_WIDTH = 500; // Collapsed width
+const COLLAPSED_WINDOW_HEIGHT = 50; // Collapsed height
+
+const windowDimensions = {
+  expanded: {
+    width: EXPANDED_WINDOW_WIDTH,
+    height: EXPANDED_WINDOW_HEIGHT,
+  },
+  collapsed: {
+    width: COLLAPSED_WINDOW_WIDTH,
+    height: COLLAPSED_WINDOW_HEIGHT,
+  },
+};
 
 app.commandLine.appendSwitch("wm-class", "non-taskbar-window"); // Hide from taskbar on Linux
 
@@ -27,46 +36,37 @@ app.on("ready", () => {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.bounds;
 
-  // Define window dimensions
-  const windowWidth = 220;
-  const windowHeight = 520;
-
   // Calculate position for the right side of the screen
-  const x = width - windowWidth - 4; // Align to the right
-  const y = (height - windowHeight) / 2; // Center vertically
+  const x = width - EXPANDED_WINDOW_WIDTH - 4; // Align to the right
+  const y = height - EXPANDED_WINDOW_HEIGHT / 2; // Center vertically
 
   // Create the browser window
   overlayWindow = new BrowserWindow({
-    width: windowWidth,
-    height: windowHeight,
+    width: EXPANDED_WINDOW_WIDTH,
+    height: EXPANDED_WINDOW_HEIGHT,
     x, // Set horizontal position
     y, // Set vertical position
     frame: false, // Frameless window
     title: "ReMon",
     skipTaskbar: true, // Hide from taskbar
     transparent: true, // Transparent background
-    alwaysOnTop: false, // Always stays on top
+    alwaysOnTop: true, // Always stays on top
+    focusable: false, // Not focusable by default
     resizable: false, // Disable resizing
     type: "utility", // Window type
     webPreferences: {
       preload: path.join(app.getAppPath(), "preload.js"), // Absolute path for the preload script
       contextIsolation: true, // Recommended for security
-      devTools: false,
+      devTools: !!isProd, // Enable DevTools in development mode
     },
-    icon: nativeImage.createFromPath(
-      path.join(app.getAppPath(), "build/icon.png")
-    ),
+    icon: nativeImage.createFromPath(path.join(app.getAppPath(), "public", "icon.ico")),
   });
 
+  overlayWindow.setIgnoreMouseEvents(true, { forward: true }); // Ignore mouse events, but allow forwarding
   isProd ? loadURL(overlayWindow) : overlayWindow.loadURL("http://localhost:3000");
 
   // overlay position utility
-  attachScreenChangeResolver(overlayWindow);
-  // Attach focus resolver to handle focus and blur events
-  //attachFocusResolver(overlayWindow);
-
-  // ignore mouse events
-  //overlayWindow.setIgnoreMouseEvents(true, { forward: true });
+  attachScreenChangeResolver(overlayWindow, windowDimensions, isExpanded);
 
   setInterval(async () => {
     try {
@@ -76,12 +76,7 @@ app.on("ready", () => {
       const cpuTemp = await si.cpuTemperature();
 
       // Identify the primary drive (root mount point or highest usage)
-      const primaryStorage =
-        storage.find((drive) =>
-          process.platform === "win32"
-            ? drive.mount === "C:\\"
-            : drive.mount === "/"
-        ) || storage[0]; // Fallback to the first drive if no root is found
+      const primaryStorage = storage.find((drive) => (process.platform === "win32" ? drive.mount === "C:\\" : drive.mount === "/")) || storage[0]; // Fallback to the first drive if no root is found
 
       // Send resource usage to the renderer process
       if (overlayWindow && !overlayWindow.isDestroyed()) {
@@ -110,17 +105,50 @@ app.on("ready", () => {
   }, 250); // Send stats every 250ms
 });
 
+function trayMenuExpamnsionToggleHandler() {
+  isExpanded = !isExpanded;
+  repositionWindow(overlayWindow, windowDimensions, isExpanded);
+  overlayWindow?.webContents.send("expansion-change", isExpanded);
+  updateTrayMenu();
+}
+
+function toggleWindowVisibility() {
+  if (overlayWindow) {
+    if (isVisible) {
+      overlayWindow.hide();
+    } else {
+      overlayWindow.show();
+      repositionWindow(overlayWindow, windowDimensions, isExpanded);
+    }
+    isVisible = !isVisible;
+    updateTrayMenu();
+  }
+}
+
+function updateTrayMenu() {
+  if (!tray) return;
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: isExpanded ? "Collapse" : "Expand",
+      click: trayMenuExpamnsionToggleHandler,
+    },
+        { type: "separator" },
+    {
+      label: isVisible ? "Hide" : "Show",
+      click: toggleWindowVisibility,
+    },
+    { type: "separator" },
+    { label: "Quit", click: () => app.quit() },
+  ]);
+  tray.setContextMenu(contextMenu);
+}
+
 // create tray icon when app is ready
 app.whenReady().then(() => {
   try {
-    const icon = nativeImage.createFromPath(
-      path.join(app.getAppPath(), "build/icon.png")
-    );
+    const icon = nativeImage.createFromPath(path.join(app.getAppPath(), "public", "icon.png"));
     tray = new Tray(icon);
-    const contextMenu = Menu.buildFromTemplate([
-      { label: "Quit", click: () => app.quit() },
-    ]);
-    tray.setContextMenu(contextMenu);
+    updateTrayMenu();
   } catch (error) {
     console.error("Error creating tray icon:", error);
   }
@@ -155,5 +183,16 @@ ipcMain.handle("get-system-host", async () => {
     return host;
   } catch (error) {
     console.error("Error fetching host name:", error);
+  }
+});
+
+app.on("before-quit", () => {
+  if (tray) {
+    tray.destroy();
+    tray = null;
+  }
+  if (overlayWindow) {
+    overlayWindow.destroy();
+    overlayWindow = null;
   }
 });
