@@ -1,7 +1,7 @@
 import RadialGauge from "./RadialGauge";
 import { GoCpu } from "react-icons/go";
 import { FaThermometerThreeQuarters, FaMemory, FaDesktop } from "react-icons/fa";
-import { BsDeviceSsdFill } from "react-icons/bs";
+import { BsDeviceSsdFill, BsGpuCard } from "react-icons/bs";
 import { IoIosTrendingUp, IoIosTrendingDown } from "react-icons/io";
 
 const CompactStats = ({ cpu, memory, storage, network, host, gpu }) => {
@@ -41,7 +41,7 @@ const CompactStats = ({ cpu, memory, storage, network, host, gpu }) => {
         const util = g.utilizationGpu ?? g.utilizationPercentage ?? 0;
         const label = g.model ? `GPU ${idx + 1}` : `GPU ${idx + 1}`;
         return (
-          <RadialGauge key={`gpu-${idx}`} value={Number(util)} unit={`${util}%`} icon={FaDesktop} />
+          <RadialGauge key={`gpu-${idx}`} value={Number(util)} unit={`${util}%`} icon={BsGpuCard} />
         );
       })}
     </div>
