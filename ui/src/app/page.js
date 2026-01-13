@@ -5,7 +5,7 @@ import CompactStats from "./ui/CompactStats";
 import ExpandedStats from "./ui/ExpandedStats";
 
 export default function Home() {
-  const { memory, cpu, storage, network, host } = useSystemStats();
+  const { memory, cpu, storage, network, host, gpu } = useSystemStats();
   const { isExpanded } = useExpansionState();
 
   return isExpanded ? (
@@ -15,6 +15,7 @@ export default function Home() {
       storage={storage}
       network={network}
       host={host}
+      gpu={gpu}
     />
   ) : (
     <CompactStats
@@ -23,6 +24,7 @@ export default function Home() {
       storage={storage}
       network={network}
       host={host}
+      gpu={gpu}
     />
   );
 }

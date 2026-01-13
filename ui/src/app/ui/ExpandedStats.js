@@ -4,7 +4,7 @@ import { BsDeviceSsdFill } from "react-icons/bs";
 import { GoCpu } from "react-icons/go";
 import { IoIosTrendingUp, IoIosTrendingDown } from "react-icons/io";
 
-const ExpandedStats = ({ cpu, memory, storage, network, host }) => {
+const ExpandedStats = ({ cpu, memory, storage, network, host, gpu }) => {
   const cpuUsage = Number(cpu?.load?.toFixed(2));
   const usedMemoryGB = (memory.used / 1024 / 1024 / 1024).toFixed(2);
   const totalMemoryGB = (memory.total / 1024 / 1024 / 1024).toFixed(2);
@@ -35,6 +35,21 @@ const ExpandedStats = ({ cpu, memory, storage, network, host }) => {
           unit={totalStorageGB > 0 ? `${usedStorageGB}GB / ${totalStorageGB}GB` : "Unable to retrieve storage"}
           icon={BsDeviceSsdFill}
         />
+        {Array.isArray(gpu) && gpu.length > 0 && (
+          gpu.map((g, idx) => {
+            const util = g.utilizationGpu ?? g.utilizationPercentage ?? 0;
+            const label = g.model ? `GPU ${idx + 1} - ${g.model}` : `GPU ${idx + 1}`;
+            return (
+              <LineGauge
+                key={`gpu-${idx}`}
+                label={label}
+                value={Number(util)}
+                unit={`${util}%`}
+                icon={FaDesktop}
+              />
+            );
+          })
+        )}
         <LineGauge
           label="Upload"
           value={uploadMb}

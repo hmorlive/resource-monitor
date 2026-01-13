@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 export default function useSystemStats() {
   const [memory, setMemory] = useState({ total: 0, used: 0 });
   const [cpu, setCpu] = useState({ load: 0 });
+  const [gpu, setGpu] = useState([]);
   const [storage, setStorage] = useState({ total: 0, used: 0 });
   const [host, setHost] = useState("");
   const [network, setNetwork] = useState({ upload: 0, download: 0 });
@@ -18,6 +19,7 @@ export default function useSystemStats() {
       const handleResourceUsage = (data) => {
         setMemory(data.memory);
         setCpu(data.cpu);
+        setGpu(data.gpu || []);
         setStorage(data.storage);
         setNetwork(data.network);
       };
@@ -26,5 +28,5 @@ export default function useSystemStats() {
     }
   }, []);
 
-  return { memory, cpu, storage, network, host };
+  return { memory, cpu, storage, network, host, gpu };
 }

@@ -78,7 +78,8 @@ app.on("ready", async () => {
       const storage = await si.fsSize();
       const cpuLoad = await si.currentLoad();
       const cpuTemp = await si.cpuTemperature();
-
+      const gpuUtil = await si.graphics();
+      
       // Identify the primary drive (root mount point or highest usage)
       const primaryStorage = storage.find((drive) => (process.platform === "win32" ? drive.mount === "C:\\" : drive.mount === "/")) || storage[0]; // Fallback to the first drive if no root is found
 
@@ -99,6 +100,9 @@ app.on("ready", async () => {
           cpu: {
             load: cpuLoad?.currentLoad,
             temp: cpuTemp.main,
+          },
+          gpu: {
+            utilizationGpu: gpuUtil.controllers,
           },
           network: await getNetworkMbps(),
         });

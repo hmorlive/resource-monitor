@@ -4,7 +4,7 @@ import { FaThermometerThreeQuarters, FaMemory, FaDesktop } from "react-icons/fa"
 import { BsDeviceSsdFill } from "react-icons/bs";
 import { IoIosTrendingUp, IoIosTrendingDown } from "react-icons/io";
 
-const CompactStats = ({ cpu, memory, storage, network, host }) => {
+const CompactStats = ({ cpu, memory, storage, network, host, gpu }) => {
   const cpuUsage = Number(cpu?.load?.toFixed(2));
   const cpuTemp = cpu?.temp ?? null;
   const usedMemoryGB = (memory.used / 1024 / 1024 / 1024).toFixed(2);
@@ -37,6 +37,13 @@ const CompactStats = ({ cpu, memory, storage, network, host }) => {
         unit={Number.isFinite(downloadMb) && downloadMb > 0 ? `${downloadMb.toFixed(1)} Mb/s` : "Idle"}
         icon={IoIosTrendingDown}
       />
+      {Array.isArray(gpu) && gpu.length > 0 && gpu.map((g, idx) => {
+        const util = g.utilizationGpu ?? g.utilizationPercentage ?? 0;
+        const label = g.model ? `GPU ${idx + 1}` : `GPU ${idx + 1}`;
+        return (
+          <RadialGauge key={`gpu-${idx}`} value={Number(util)} unit={`${util}%`} icon={FaDesktop} />
+        );
+      })}
     </div>
   );
 };

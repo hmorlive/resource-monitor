@@ -20,7 +20,7 @@ const RadialGauge = ({
   const color = getColor(progress, thresholdColors);
 
   return (
-    <div className="flex flex-col items-center justify-center text-xs">
+    <div className="flex flex-col items-center justify-center text-xs bg-zinc-900/80 rounded-full">
       <div className="relative" style={{ width: size, height: size }}>
         <svg className="transform -rotate-90" width={size} height={size}>
           <circle
